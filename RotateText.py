@@ -5,11 +5,16 @@ import numpy as np
 cv2.namedWindow("Image", cv2.WINDOW_NORMAL)
 cv2.resizeWindow("Image", 1000, 1000)
 
-img = cv2.imread('Input\Text45.png')
+img = cv2.imread('Input\Text_4_90.png')
+
+
+cv2.imshow("Image", img)
+cv2.waitKey(0)
 
 
 #Convert image to grey and 
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+gray = cv2.bitwise_not(gray)
 
 
 #Binarize the image with an automatic generarted OTSU threshold
@@ -22,6 +27,9 @@ cv2.waitKey(0)
 
 #Detect edges with a canny edge detection
 canny = cv2.Canny(gray, 50, 200, 3)
+
+#Picture 3 canny threshholds
+#canny = cv2.Canny(gray, 150, 1350, 3)
 
 cv2.imshow("Image", canny)
 cv2.waitKey(0)
@@ -36,6 +44,9 @@ if useHoughLineP:
     lines = cv2.HoughLinesP(canny, 1, 3.1415/180, 250, 50, 10)
 else:
     lines = cv2.HoughLines(canny, 1, 3.1415/180, 250, 50, 0)
+
+    #Picture 4 hough trheshhold
+    #lines = cv2.HoughLines(canny, 1, 3.1415/180, 125, 50, 0)
 
 #Generate array for all the angles
 angles = np.zeros(lines.shape[0])
@@ -106,6 +117,11 @@ for i in range(0, angles.shape[0]):
 
     if(angleHistogram[int(angles[i] + 90)] > mostCommonAngleCount):
         mostCommonAngle = angles[i]
+        mostCommonAngleCount = angleHistogram[int(angles[i] + 90)]
+
+#Check if the image is right or left tilted and change the angle to the tilt
+if mostCommonAngle > 0:
+    mostCommonAngle = mostCommonAngle * -1
 
 #Create a rotation matrix and apply this rotation matrix on the original image
 rows, cols = canny.shape
