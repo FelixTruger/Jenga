@@ -1,15 +1,29 @@
 import cv2
 import numpy as np
 
+def waitKeyAndExitOnEscape():
+    k = cv2.waitKey()
+    if k == 27:
+        exit()
+
+windowSize = (1000, 1000)
+imageNumber = 3
+imageRotation = 45
+cannyStartThreshold = 200
+cannyContinueThreshold = 50
+useHoughLineP = False
+houghLineThreshold = 250
+
+
 #Create output window
 cv2.namedWindow("Image", cv2.WINDOW_NORMAL)
-cv2.resizeWindow("Image", 1000, 1000)
+cv2.resizeWindow("Image", windowSize[0], windowSize[1])
 
-img = cv2.imread('Input\Text_4_90.png')
+img = cv2.imread('Input\Text_' + str(imageNumber) + '_' + str(imageRotation) + '.png')
 
 
 cv2.imshow("Image", img)
-cv2.waitKey(0)
+waitKeyAndExitOnEscape()
 
 
 #Convert image to grey and 
@@ -17,36 +31,40 @@ gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 gray = cv2.bitwise_not(gray)
 
 
+cv2.imshow("Image", gray)
+waitKeyAndExitOnEscape()
+
+
 #Binarize the image with an automatic generarted OTSU threshold
 #OTSU -> Generates threshold based on brightness of the input image
 thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
 
 cv2.imshow("Image", thresh)
-cv2.waitKey(0)
+waitKeyAndExitOnEscape()
 
+cannyStartThreshold = 200
+cannyContinueThreshold = 50
 
 #Detect edges with a canny edge detection
-canny = cv2.Canny(gray, 50, 200, 3)
+canny = cv2.Canny(gray, cannyContinueThreshold, cannyStartThreshold, 3)
 
-#Picture 3 canny threshholds
-#canny = cv2.Canny(gray, 150, 1350, 3)
 
 cv2.imshow("Image", canny)
-cv2.waitKey(0)
+waitKeyAndExitOnEscape()
+
+
+if imageNumber == 4:
+    houghLineThreshold = 125
+else:
+    houghLineThreshold = 250
 
 #Find all lines in the image
 #The threshold must be relative high, because otherwise the letters themself will
 #be recognized as lines and not only the text lines (L will return 2 lines with a low threshold)
-
-useHoughLineP = False
-
 if useHoughLineP:
-    lines = cv2.HoughLinesP(canny, 1, 3.1415/180, 250, 50, 10)
+    lines = cv2.HoughLinesP(canny, 1, 3.1415/180, houghLineThreshold, 50, 10)
 else:
-    lines = cv2.HoughLines(canny, 1, 3.1415/180, 250, 50, 0)
-
-    #Picture 4 hough trheshhold
-    #lines = cv2.HoughLines(canny, 1, 3.1415/180, 125, 50, 0)
+    lines = cv2.HoughLines(canny, 1, 3.1415/180, houghLineThreshold, 50, 0)
 
 #Generate array for all the angles
 angles = np.zeros(lines.shape[0])
@@ -99,7 +117,7 @@ for i in range(0, lines.shape[0]):
             
 
 cv2.imshow("Image", canny)
-cv2.waitKey(0)
+waitKeyAndExitOnEscape()
 
 #Create a histogram with the found angles
 angleHistogram = np.zeros(181)
@@ -119,10 +137,6 @@ for i in range(0, angles.shape[0]):
         mostCommonAngle = angles[i]
         mostCommonAngleCount = angleHistogram[int(angles[i] + 90)]
 
-#Check if the image is right or left tilted and change the angle to the tilt
-if mostCommonAngle > 0:
-    mostCommonAngle = mostCommonAngle * -1
-
 #Create a rotation matrix and apply this rotation matrix on the original image
 rows, cols = canny.shape
 rotateMatrix = cv2.getRotationMatrix2D((cols/2, rows/2), mostCommonAngle, 1)
@@ -130,4 +144,14 @@ rotatedImage = cv2.warpAffine(img, rotateMatrix, (cols, rows))
 
 
 cv2.imshow("Image", rotatedImage)
-cv2.waitKey(0)
+waitKeyAndExitOnEscape()
+
+mostCommonAngle = mostCommonAngle * -1
+
+#Create a rotation matrix and apply this rotation matrix on the original image
+rows, cols = canny.shape
+rotateMatrix = cv2.getRotationMatrix2D((cols/2, rows/2), mostCommonAngle, 1)
+rotatedImage = cv2.warpAffine(img, rotateMatrix, (cols, rows))
+
+cv2.imshow("Image", rotatedImage)
+waitKeyAndExitOnEscape()
