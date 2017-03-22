@@ -7,7 +7,7 @@ def waitKeyAndExitOnEscape():
         exit()
 
 windowSize = (1000, 1000)
-imageNumber = 3
+imageNumber = 5
 imageRotation = 45
 cannyStartThreshold = 200
 cannyContinueThreshold = 50
@@ -100,9 +100,11 @@ for i in range(0, lines.shape[0]):
     else:
         #Normiere die Steigung auf 1 um den Winkel der Linie auszurechnen
         #arccos( 1 / sqrt( 1^2 + steigerung^2 ) )
-        rise = (p2y - p1y) / (p2x - p1x)
+        rise = (p1y - p2y) / (p1x - p2x)
         length = np.sqrt(np.power(1, 2) + np.power(rise, 2))
         angles[i] = np.round(np.arccos(1 / length) * 180 / 3.1415)
+        if rise < 0:
+            angles[i] = angles[i] * -1
 
 
     #Draw the found lines
@@ -137,21 +139,12 @@ for i in range(0, angles.shape[0]):
         mostCommonAngle = angles[i]
         mostCommonAngleCount = angleHistogram[int(angles[i] + 90)]
 
-#Create a rotation matrix and apply this rotation matrix on the original image
-rows, cols = canny.shape
-rotateMatrix = cv2.getRotationMatrix2D((cols/2, rows/2), mostCommonAngle, 1)
-rotatedImage = cv2.warpAffine(img, rotateMatrix, (cols, rows))
-
-
-cv2.imshow("Image", rotatedImage)
-waitKeyAndExitOnEscape()
-
-mostCommonAngle = mostCommonAngle * -1
 
 #Create a rotation matrix and apply this rotation matrix on the original image
 rows, cols = canny.shape
 rotateMatrix = cv2.getRotationMatrix2D((cols/2, rows/2), mostCommonAngle, 1)
 rotatedImage = cv2.warpAffine(img, rotateMatrix, (cols, rows))
+
 
 cv2.imshow("Image", rotatedImage)
 waitKeyAndExitOnEscape()
