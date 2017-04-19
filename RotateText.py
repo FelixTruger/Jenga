@@ -7,8 +7,8 @@ def waitKeyAndExitOnEscape():
         exit()
 
 windowSize = (1000, 1000)
-imageNumber = 5
-imageRotation = 45
+imageNumber = 6
+imageRotation = 0
 cannyStartThreshold = 200
 cannyContinueThreshold = 50
 useHoughLineP = False
@@ -55,6 +55,8 @@ waitKeyAndExitOnEscape()
 
 if imageNumber == 4:
     houghLineThreshold = 125
+elif imageNumber == 6:
+    houghLineThreshold = 75
 else:
     houghLineThreshold = 250
 
